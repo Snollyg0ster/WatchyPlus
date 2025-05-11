@@ -47,7 +47,8 @@ void Watchy::init(String datetime) {
     case WATCHFACE_STATE:
       showWatchFace(true); // partial updates on tick
       if (settings.vibrateOClock) {
-        if (currentTime.Minute == 0) {
+        bool isMuteHour = currentTime.Hour >= settings.muteFromHour && currentTime.Hour <= settings.muteToHour;
+        if (currentTime.Minute == 0 && !isMuteHour) {
           // The RTC wakes us up once per minute
           vibMotor(75, 4);
         }

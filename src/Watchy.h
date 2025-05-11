@@ -60,6 +60,8 @@ typedef struct watchySettings {
   int gmtOffset;
   //
   bool vibrateOClock;
+  int8_t muteFromHour = 1;
+  int8_t muteToHour = 8;
 } watchySettings;
 
 class Watchy {
