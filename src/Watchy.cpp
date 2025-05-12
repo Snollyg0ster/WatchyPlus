@@ -24,6 +24,53 @@ RTC_DATA_ATTR tmElements_t bootTime;
 RTC_DATA_ATTR uint32_t lastIPAddress;
 RTC_DATA_ATTR char lastSSID[30];
 
+class Watchy {
+  std::vector<Route> routes = {
+      {
+          "home",
+          {"menu"},
+      },
+      {"menu",
+       {
+           "about",
+           "buzz",
+           "accelerometer",
+           "time",
+           "update-fw",
+           "sync-ntp",
+       }},
+  };
+  std::map<std::string, void (*)()> routeScreens{
+      {
+          "home",
+          []() { showWatchFace(false); },
+      },
+      {
+          "about",
+          []() { showAbout(); },
+      },
+      {
+          "buzz",
+          []() { showBuzz(); },
+      },
+      {
+          "accelerometer",
+          []() { showAccelerometer(); },
+      },
+      {
+          "time",
+          []() { setTime(); },
+      },
+      {
+          "update-fw",
+          []() { showUpdateFW(); },
+      },
+      {
+          "sync-ntp",
+          []() { showSyncNTP(); },
+      }};
+};
+
 void Watchy::init(String datetime) {
   esp_sleep_wakeup_cause_t wakeup_reason;
   wakeup_reason = esp_sleep_get_wakeup_cause(); // get wake up reason
@@ -42,6 +89,7 @@ void Watchy::init(String datetime) {
 #else
   case ESP_SLEEP_WAKEUP_EXT0: // RTC Alarm
 #endif
+
     RTC.read(currentTime);
     switch (guiState) {
     case WATCHFACE_STATE:
@@ -851,7 +899,8 @@ void Watchy::_bmaConfig() {
   */
   cfg.range = BMA4_ACCEL_RANGE_2G;
   /*!
-      Bandwidth parameter, determines filter configuration, Optional parameters:
+      Bandwidth parameter, determines filter configuration, Optional
+     parameters:
           - BMA4_ACCEL_OSR4_AVG1
           - BMA4_ACCEL_OSR2_AVG2
           - BMA4_ACCEL_NORMAL_AVG4
@@ -961,8 +1010,8 @@ void Watchy::_configModeCallback(WiFiManager *myWiFiManager) {
 }
 
 bool Watchy::connectWiFi() {
-  if (WL_CONNECT_FAILED ==
-      WiFi.begin()) { // WiFi not setup, you can also use hard coded credentials
+  if (WL_CONNECT_FAILED == WiFi.begin()) { // WiFi not setup, you can also use
+                                           // hard coded credentials
     // with WiFi.begin(SSID,PASS);
     WIFI_CONFIGURED = false;
   } else {

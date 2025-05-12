@@ -1,6 +1,8 @@
 #ifndef WATCHY_H
 #define WATCHY_H
 
+// clang-format off
+#include <Router.h>
 #include <Arduino.h>
 #include <WiFiManager.h>
 #include <HTTPClient.h>
@@ -34,6 +36,7 @@
 #else
   #include "WatchyRTC.h"
 #endif
+// clang-format on
 
 typedef struct weatherData {
   int8_t temperature;
@@ -66,14 +69,16 @@ typedef struct watchySettings {
 
 class Watchy {
 public:
-  #ifdef ARDUINO_ESP32S3_DEV
-   static Watchy32KRTC RTC;
-  #else
-   static WatchyRTC RTC;
-  #endif
+#ifdef ARDUINO_ESP32S3_DEV
+  static Watchy32KRTC RTC;
+#else
+  static WatchyRTC RTC;
+#endif
   static GxEPD2_BW<WatchyDisplay, WatchyDisplay::HEIGHT> display;
   tmElements_t currentTime;
   watchySettings settings;
+  std::vector<Route> routes;
+  std::map<std::string, void (*)()> routeScreens;
 
 public:
   explicit Watchy(const watchySettings &s) : settings(s) {} // constructor
@@ -111,8 +116,9 @@ private:
                                 uint16_t len);
   static uint16_t _writeRegister(uint8_t address, uint8_t reg, uint8_t *data,
                                  uint16_t len);
-  weatherData _getWeatherData(String cityID, String lat, String lon, String units, String lang,
-                             String url, String apiKey, uint8_t updateInterval);                                 
+  weatherData _getWeatherData(String cityID, String lat, String lon,
+                              String units, String lang, String url,
+                              String apiKey, uint8_t updateInterval);
 };
 
 extern RTC_DATA_ATTR int guiState;

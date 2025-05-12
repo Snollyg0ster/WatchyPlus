@@ -2,6 +2,9 @@
 #include <string>
 #include <vector>
 
+#ifndef ROUTER_H
+#define ROUTER_H
+
 struct Route {
   std::string name;
   std::vector<std::string> routes;
@@ -19,3 +22,5 @@ public:
   Route getRoute();
   bool back();
 };
+
+#endif // ROUTER_H
