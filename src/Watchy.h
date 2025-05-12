@@ -93,7 +93,7 @@ public:
            "sync-ntp",
        }},
   };
-  std::map<std::string, void (Watchy::*)()> routeScreens{
+  std::map<std::string, void (Watchy::*)(bool)> routeScreens{
       {
           "home",
           &Watchy::showWatchFace,
@@ -111,6 +111,10 @@ public:
           &Watchy::showAccelerometer,
       },
       {
+          "wifi",
+          &Watchy::setupWifi,
+      },
+      {
           "time",
           &Watchy::setTime,
       },
@@ -120,7 +124,7 @@ public:
       },
       {
           "sync-ntp",
-          &Watchy::showUpdateFW,
+          &Watchy::showSyncNTP,
       }};
 
 public:
@@ -134,16 +138,16 @@ public:
   virtual void handleButtonPress();
   void showMenu(byte menuIndex, bool partialRefresh);
   void showFastMenu(byte menuIndex);
-  void showAbout();
-  void showBuzz();
-  void showAccelerometer();
-  void showUpdateFW();
-  void showSyncNTP();
+  void showAbout(bool partialRefresh);
+  void showBuzz(bool partialRefresh);
+  void showAccelerometer(bool partialRefresh);
+  void showUpdateFW(bool partialRefresh);
+  void showSyncNTP(bool partialRefresh);
   bool syncNTP();
   bool syncNTP(long gmt);
   bool syncNTP(long gmt, String ntpServer);
-  void setTime();
-  void setupWifi();
+  void setTime(bool partialRefresh);
+  void setupWifi(bool partialRefresh);
   bool connectWiFi();
   weatherData getWeatherData();
   void updateFWBegin();
