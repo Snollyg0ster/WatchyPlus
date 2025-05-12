@@ -24,53 +24,6 @@ RTC_DATA_ATTR tmElements_t bootTime;
 RTC_DATA_ATTR uint32_t lastIPAddress;
 RTC_DATA_ATTR char lastSSID[30];
 
-class Watchy {
-  std::vector<Route> routes = {
-      {
-          "home",
-          {"menu"},
-      },
-      {"menu",
-       {
-           "about",
-           "buzz",
-           "accelerometer",
-           "time",
-           "update-fw",
-           "sync-ntp",
-       }},
-  };
-  std::map<std::string, void (*)()> routeScreens{
-      {
-          "home",
-          []() { showWatchFace(false); },
-      },
-      {
-          "about",
-          []() { showAbout(); },
-      },
-      {
-          "buzz",
-          []() { showBuzz(); },
-      },
-      {
-          "accelerometer",
-          []() { showAccelerometer(); },
-      },
-      {
-          "time",
-          []() { setTime(); },
-      },
-      {
-          "update-fw",
-          []() { showUpdateFW(); },
-      },
-      {
-          "sync-ntp",
-          []() { showSyncNTP(); },
-      }};
-};
-
 void Watchy::init(String datetime) {
   esp_sleep_wakeup_cause_t wakeup_reason;
   wakeup_reason = esp_sleep_get_wakeup_cause(); // get wake up reason

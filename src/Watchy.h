@@ -3,6 +3,7 @@
 
 // clang-format off
 #include <Router.h>
+#include <functional>
 #include <Arduino.h>
 #include <WiFiManager.h>
 #include <HTTPClient.h>
@@ -77,8 +78,50 @@ public:
   static GxEPD2_BW<WatchyDisplay, WatchyDisplay::HEIGHT> display;
   tmElements_t currentTime;
   watchySettings settings;
-  std::vector<Route> routes;
-  std::map<std::string, void (*)()> routeScreens;
+  std::vector<Route> routes = {
+      {
+          "home",
+          {"menu"},
+      },
+      {"menu",
+       {
+           "about",
+           "buzz",
+           "accelerometer",
+           "time",
+           "update-fw",
+           "sync-ntp",
+       }},
+  };
+  std::map<std::string, void (Watchy::*)()> routeScreens{
+      {
+          "home",
+          &Watchy::showWatchFace,
+      },
+      {
+          "about",
+          &Watchy::showAbout,
+      },
+      {
+          "buzz",
+          &Watchy::showBuzz,
+      },
+      {
+          "accelerometer",
+          &Watchy::showAccelerometer,
+      },
+      {
+          "time",
+          &Watchy::setTime,
+      },
+      {
+          "update-fw",
+          &Watchy::showUpdateFW,
+      },
+      {
+          "sync-ntp",
+          &Watchy::showUpdateFW,
+      }};
 
 public:
   explicit Watchy(const watchySettings &s) : settings(s) {} // constructor
