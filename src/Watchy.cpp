@@ -23,6 +23,13 @@ RTC_DATA_ATTR bool USB_PLUGGED_IN = false;
 RTC_DATA_ATTR tmElements_t bootTime;
 RTC_DATA_ATTR uint32_t lastIPAddress;
 RTC_DATA_ATTR char lastSSID[30];
+RTC_DATA_ATTR std::string defaultRoute = "home";
+RTC_DATA_ATTR std::map<std::string, int> routeIndexes = {};
+RTC_DATA_ATTR std::vector<Route> routingHistory = {};
+
+class RTCRouter : Router {
+  std::vector<Route> *__getHistory() override { return &routingHistory; }
+};
 
 void Watchy::init(String datetime) {
   esp_sleep_wakeup_cause_t wakeup_reason;
