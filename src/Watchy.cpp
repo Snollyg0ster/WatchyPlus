@@ -27,11 +27,99 @@ RTC_DATA_ATTR std::string defaultRoute = "home";
 RTC_DATA_ATTR std::map<std::string, int> routeIndexes = {};
 RTC_DATA_ATTR std::vector<Route> routingHistory = {};
 
-class RTCRouter : Router {
-  std::vector<Route> history = routingHistory;
-};
+Watchy::Watchy(const watchySettings &s) : settings(s) {
+  router = new Router(routes, routingHistory);
+}
 
 void Watchy::init(String datetime) {
+  esp_sleep_wakeup_cause_t wakeup_cause =
+      esp_sleep_get_wakeup_cause(); // get wake up reason
+
+  // init i2c
+#ifdef ARDUINO_ESP32S3_DEV
+  Wire.begin(WATCHY_V3_SDA, WATCHY_V3_SCL);
+#else
+  Wire.begin(SDA, SCL);
+#endif
+
+  RTC.init();
+  display.epd2.initWatchy();
+
+  switch (wakeup_cause) {
+#ifdef ARDUINO_ESP32S3_DEV
+  case ESP_SLEEP_WAKEUP_TIMER: // RTC Alarm
+#else
+  case ESP_SLEEP_WAKEUP_EXT0: // RTC Alarm
+#endif
+
+    RTC.read(currentTime);
+    switch (guiState) {
+    case WATCHFACE_STATE:
+      showWatchFace(true); // partial updates on tick
+      if (settings.vibrateOClock) {
+        bool isMuteHour = currentTime.Hour >= settings.muteFromHour &&
+                          currentTime.Hour <= settings.muteToHour;
+        if (currentTime.Minute == 0 && !isMuteHour) {
+          // The RTC wakes us up once per minute
+          vibMotor(75, 4);
+        }
+      }
+      break;
+    case MAIN_MENU_STATE:
+      // Return to watchface if in menu for more than one tick
+      if (alreadyInMenu) {
+        guiState = WATCHFACE_STATE;
+        showWatchFace(false);
+      } else {
+        alreadyInMenu = true;
+      }
+      break;
+    }
+    break;
+  case ESP_SLEEP_WAKEUP_EXT1: // button Press
+    // handleButtonPress();
+    // TODO add button handling
+    break;
+#ifdef ARDUINO_ESP32S3_DEV
+  case ESP_SLEEP_WAKEUP_EXT0: // USB plug in
+    pinMode(USB_DET_PIN, INPUT);
+    USB_PLUGGED_IN = (digitalRead(USB_DET_PIN) == 1);
+    if (guiState == WATCHFACE_STATE) {
+      RTC.read(currentTime);
+      showWatchFace(true);
+    }
+    break;
+#endif
+  default: // reset
+    RTC.config(datetime);
+    _bmaConfig();
+#ifdef ARDUINO_ESP32S3_DEV
+    pinMode(USB_DET_PIN, INPUT);
+    USB_PLUGGED_IN = (digitalRead(USB_DET_PIN) == 1);
+#endif
+    gmtOffset = settings.gmtOffset;
+    RTC.read(currentTime);
+    RTC.read(bootTime);
+    showWatchFace(false); // full update on reset
+    vibMotor(75, 4);
+    // For some reason, seems to be enabled on first boot
+    esp_sleep_disable_wakeup_source(ESP_SLEEP_WAKEUP_ALL);
+    break;
+  }
+  deepSleep();
+}
+
+void Watchy::_drawScreens() {
+  Route route = router->getRoute();
+  auto screenIterator = routeScreens.find(route.name);
+
+  if (screenIterator != routeScreens.end()) {
+    void (Watchy::*screen)(bool) = screenIterator->second;
+    (this->*screen)(false);
+  }
+}
+
+void Watchy::initDeprecated(String datetime) {
   esp_sleep_wakeup_cause_t wakeup_reason;
   wakeup_reason = esp_sleep_get_wakeup_cause(); // get wake up reason
 #ifdef ARDUINO_ESP32S3_DEV

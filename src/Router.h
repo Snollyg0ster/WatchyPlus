@@ -10,14 +10,15 @@ struct Route {
   std::vector<std::string> routes;
 };
 
+using History = std::vector<Route>;
+
 class Router {
 private:
-  std::vector<Route> history;
+  History history;
   std::map<std::string, Route> routeMap;
 
 public:
-  Router(std::vector<Route> routes);
-  Router(std::vector<Route> routes, std::string defaultRoute);
+  Router(History routes, History restoredhistor);
   void setRoute(std::string name, bool clear);
   Route getRoute();
   bool back();

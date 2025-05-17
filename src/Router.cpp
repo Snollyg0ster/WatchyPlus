@@ -1,25 +1,17 @@
 #include <Router.h>
 
-Router::Router(std::vector<Route> routes) {
-  for (Route r : routes) {
-    routeMap[r.name] = r;
-  }
-}
-
 void Router::setRoute(std::string name, bool clear = false) {
   if (clear)
     history.clear();
   history.push_back(routeMap.at(name));
 }
 
-Router::Router(std::vector<Route> routes, std::string defaultRoute) {
+Router::Router(History routes, History restoredhistory = {}) {
   for (Route r : routes) {
     routeMap[r.name] = r;
   }
 
-  if (history.size() == 0) {
-    setRoute(defaultRoute);
-  }
+  history = restoredhistory;
 }
 
 Route Router::getRoute() { return history.back(); }

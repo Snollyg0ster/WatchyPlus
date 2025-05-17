@@ -78,6 +78,7 @@ public:
   static GxEPD2_BW<WatchyDisplay, WatchyDisplay::HEIGHT> display;
   tmElements_t currentTime;
   watchySettings settings;
+  Router *router;
   std::vector<Route> routes = {
       {
           "home",
@@ -128,8 +129,9 @@ public:
       }};
 
 public:
-  explicit Watchy(const watchySettings &s) : settings(s) {} // constructor
+  explicit Watchy(const watchySettings &s); // constructor
   void init(String datetime = "");
+  void initDeprecated(String datetime = "");
   void deepSleep();
   float getBatteryVoltage();
   uint8_t getBoardRevision();
@@ -166,6 +168,7 @@ private:
   weatherData _getWeatherData(String cityID, String lat, String lon,
                               String units, String lang, String url,
                               String apiKey, uint8_t updateInterval);
+  void _drawScreens();
 };
 
 extern RTC_DATA_ATTR int guiState;
