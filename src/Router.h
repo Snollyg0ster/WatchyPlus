@@ -14,7 +14,6 @@ class Router {
 private:
   std::vector<Route> history;
   std::map<std::string, Route> routeMap;
-  virtual std::vector<Route> *__getHistory();
 
 public:
   Router(std::vector<Route> routes);

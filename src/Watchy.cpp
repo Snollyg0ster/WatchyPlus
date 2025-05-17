@@ -28,7 +28,7 @@ RTC_DATA_ATTR std::map<std::string, int> routeIndexes = {};
 RTC_DATA_ATTR std::vector<Route> routingHistory = {};
 
 class RTCRouter : Router {
-  std::vector<Route> *__getHistory() override { return &routingHistory; }
+  std::vector<Route> history = routingHistory;
 };
 
 void Watchy::init(String datetime) {
