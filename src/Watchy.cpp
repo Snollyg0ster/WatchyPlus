@@ -23,12 +23,11 @@ RTC_DATA_ATTR bool USB_PLUGGED_IN = false;
 RTC_DATA_ATTR tmElements_t bootTime;
 RTC_DATA_ATTR uint32_t lastIPAddress;
 RTC_DATA_ATTR char lastSSID[30];
-RTC_DATA_ATTR std::string defaultRoute = "home";
 RTC_DATA_ATTR std::map<std::string, int> routeIndexes = {};
 RTC_DATA_ATTR std::vector<Route> routingHistory = {};
 
 Watchy::Watchy(const watchySettings &s) : settings(s) {
-  router = new Router(routes, routingHistory);
+  router = new Router(routes, routingHistory, "home");
 }
 
 void Watchy::init(String datetime) {
@@ -51,30 +50,10 @@ void Watchy::init(String datetime) {
 #else
   case ESP_SLEEP_WAKEUP_EXT0: // RTC Alarm
 #endif
-
     RTC.read(currentTime);
-    switch (guiState) {
-    case WATCHFACE_STATE:
-      showWatchFace(true); // partial updates on tick
-      if (settings.vibrateOClock) {
-        bool isMuteHour = currentTime.Hour >= settings.muteFromHour &&
-                          currentTime.Hour <= settings.muteToHour;
-        if (currentTime.Minute == 0 && !isMuteHour) {
-          // The RTC wakes us up once per minute
-          vibMotor(75, 4);
-        }
-      }
-      break;
-    case MAIN_MENU_STATE:
-      // Return to watchface if in menu for more than one tick
-      if (alreadyInMenu) {
-        guiState = WATCHFACE_STATE;
-        showWatchFace(false);
-      } else {
-        alreadyInMenu = true;
-      }
-      break;
-    }
+
+    _drawScreen(true);
+
     break;
   case ESP_SLEEP_WAKEUP_EXT1: // button Press
     // handleButtonPress();
@@ -109,13 +88,13 @@ void Watchy::init(String datetime) {
   deepSleep();
 }
 
-void Watchy::_drawScreens() {
+void Watchy::_drawScreen(bool partialUpdate = false) {
   Route route = router->getRoute();
   auto screenIterator = routeScreens.find(route.name);
 
   if (screenIterator != routeScreens.end()) {
     void (Watchy::*screen)(bool) = screenIterator->second;
-    (this->*screen)(false);
+    (this->*screen)(partialUpdate);
   }
 }
 

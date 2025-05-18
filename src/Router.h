@@ -18,7 +18,7 @@ private:
   std::map<std::string, Route> routeMap;
 
 public:
-  Router(History routes, History restoredhistor);
+  Router(History routes, History restoredhistory, std::string defaultRoute);
   void setRoute(std::string name, bool clear);
   Route getRoute();
   bool back();

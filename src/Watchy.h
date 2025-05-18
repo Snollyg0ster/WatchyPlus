@@ -168,7 +168,7 @@ private:
   weatherData _getWeatherData(String cityID, String lat, String lon,
                               String units, String lang, String url,
                               String apiKey, uint8_t updateInterval);
-  void _drawScreens();
+  void _drawScreen(bool partialUpdate);
 };
 
 extern RTC_DATA_ATTR int guiState;

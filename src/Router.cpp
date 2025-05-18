@@ -6,12 +6,17 @@ void Router::setRoute(std::string name, bool clear = false) {
   history.push_back(routeMap.at(name));
 }
 
-Router::Router(History routes, History restoredhistory = {}) {
+Router::Router(History routes, History restoredhistory,
+               std::string defaultRoute) {
   for (Route r : routes) {
     routeMap[r.name] = r;
   }
 
   history = restoredhistory;
+
+  if (history.size() == 0) {
+    setRoute(defaultRoute);
+  }
 }
 
 Route Router::getRoute() { return history.back(); }
