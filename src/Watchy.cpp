@@ -46,6 +46,7 @@ void Watchy::init(String datetime) {
 
   RTC.init();
   display.epd2.initWatchy();
+  RTC.read(currentTime);
 
   switch (wakeup_cause) {
 #ifdef ARDUINO_ESP32S3_DEV
@@ -53,13 +54,11 @@ void Watchy::init(String datetime) {
 #else
   case ESP_SLEEP_WAKEUP_EXT0: // RTC Alarm
 #endif
-    RTC.read(currentTime);
 
     _drawScreen(true);
 
     break;
   case ESP_SLEEP_WAKEUP_EXT1: { // button Press
-    RTC.read(currentTime);
     _checkPressedButton();
     bool partialRefresh = _handleNavigation();
     _drawScreen(partialRefresh);
@@ -70,7 +69,6 @@ void Watchy::init(String datetime) {
     pinMode(USB_DET_PIN, INPUT);
     USB_PLUGGED_IN = (digitalRead(USB_DET_PIN) == 1);
     if (guiState == WATCHFACE_STATE) {
-      RTC.read(currentTime);
       showWatchFace(true);
     }
     break;
@@ -83,7 +81,6 @@ void Watchy::init(String datetime) {
     USB_PLUGGED_IN = (digitalRead(USB_DET_PIN) == 1);
 #endif
     gmtOffset = settings.gmtOffset;
-    RTC.read(currentTime);
     RTC.read(bootTime);
     showWatchFace(false); // full update on reset
     vibMotor(75, 4);
@@ -132,7 +129,8 @@ bool Watchy::_handleNavigation() {
   Route route = router->getRoute();
 
   if (routeScreens.count(route.name)) {
-    return true;
+    Screen screen = routeScreens.at(route.name);
+    return (this->*screen.onButtonPress)();
   }
 
   switch (pressedButton) {
@@ -158,16 +156,17 @@ bool Watchy::_handleNavigation() {
   }
 }
 
-void Watchy::onWatchFaceButtonPress() {
+bool Watchy::onWatchFaceButtonPress() {
   switch (pressedButton) {
   case Button::Menu: {
-    router->setRoute(routes["home"].name);
-    break;
+    router->setRoute(routes.at("home").routes.at(0));
+    return false;
   }
   case Button::Back: {
     darkMode = !darkMode;
-    break;
+    return false;
   }
+  default:
   }
 }
 

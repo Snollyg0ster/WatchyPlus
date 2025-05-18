@@ -73,7 +73,7 @@ enum class Button { Nothing, Menu, Back, Up, Down };
 class Watchy {
   struct Screen {
     void (Watchy::*render)(bool);
-    void (Watchy::*onButtonPress)();
+    bool (Watchy::*onButtonPress)();
   };
 
 public:
@@ -168,7 +168,7 @@ public:
   void vibMotor(uint8_t intervalMs = 100, uint8_t length = 20);
 
   virtual void handleButtonPress();
-  void onWatchFaceButtonPress();
+  bool onWatchFaceButtonPress();
   void showMenu(byte menuIndex, bool partialRefresh);
   void showFastMenu(byte menuIndex);
   void showAbout(bool partialRefresh);
