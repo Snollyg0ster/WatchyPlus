@@ -169,6 +169,7 @@ private:
                               String units, String lang, String url,
                               String apiKey, uint8_t updateInterval);
   void _drawScreen(bool partialUpdate);
+  bool _handleNavigation();
 };
 
 extern RTC_DATA_ATTR int guiState;

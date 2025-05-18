@@ -56,8 +56,8 @@ void Watchy::init(String datetime) {
 
     break;
   case ESP_SLEEP_WAKEUP_EXT1: // button Press
-    // handleButtonPress();
-    // TODO add button handling
+    bool partialRefresh = _handleNavigation();
+    _drawScreen(partialRefresh);
     break;
 #ifdef ARDUINO_ESP32S3_DEV
   case ESP_SLEEP_WAKEUP_EXT0: // USB plug in
@@ -95,6 +95,38 @@ void Watchy::_drawScreen(bool partialUpdate = false) {
   if (screenIterator != routeScreens.end()) {
     void (Watchy::*screen)(bool) = screenIterator->second;
     (this->*screen)(partialUpdate);
+  }
+}
+
+bool Watchy::_handleNavigation() {
+  uint64_t wakeupBit = esp_sleep_get_ext1_wakeup_status();
+  Route route = router->getRoute();
+
+  if (routeScreens.count(route.name)) {
+    return false;
+  }
+
+  if (wakeupBit & MENU_BTN_MASK) {
+    router->setRoute(route.routes.at(routeIndexes[route.name]));
+    return false;
+  }
+
+  if (wakeupBit & BACK_BTN_MASK) {
+    router->back();
+    return false;
+  }
+
+  if (wakeupBit & UP_BTN_MASK) {
+    routeIndexes[route.name] =
+        (routeIndexes[route.name] % route.routes.size()) + 1;
+    return true;
+  }
+
+  if (wakeupBit & DOWN_BTN_MASK) {
+    routeIndexes[route.name] =
+        (route.routes.size() + routeIndexes[route.name] - 1) %
+        route.routes.size();
+    return true;
   }
 }
 

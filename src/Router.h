@@ -19,7 +19,7 @@ private:
 
 public:
   Router(History routes, History restoredhistory, std::string defaultRoute);
-  void setRoute(std::string name, bool clear);
+  void setRoute(std::string name, bool clear = false);
   Route getRoute();
   bool back();
 };
