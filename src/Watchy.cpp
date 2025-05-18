@@ -10,6 +10,7 @@ WatchyRTC Watchy::RTC;
 GxEPD2_BW<WatchyDisplay, WatchyDisplay::HEIGHT>
     Watchy::display(WatchyDisplay{});
 
+RTC_DATA_ATTR bool darkMode = true;
 RTC_DATA_ATTR int guiState;
 RTC_DATA_ATTR int menuIndex;
 RTC_DATA_ATTR BMA423 sensor;
@@ -25,6 +26,8 @@ RTC_DATA_ATTR uint32_t lastIPAddress;
 RTC_DATA_ATTR char lastSSID[30];
 RTC_DATA_ATTR std::map<std::string, int> routeIndexes = {};
 RTC_DATA_ATTR std::vector<Route> routingHistory = {};
+
+bool Watchy::isDarkMode() { return darkMode; }
 
 Watchy::Watchy(const watchySettings &s) : settings(s) {
   router = new Router(routes, routingHistory, "home");
@@ -151,6 +154,19 @@ bool Watchy::_handleNavigation() {
         (route.routes.size() + routeIndexes[route.name] - 1) %
         route.routes.size();
     return true;
+  }
+  }
+}
+
+void Watchy::onWatchFaceButtonPress() {
+  switch (pressedButton) {
+  case Button::Menu: {
+    router->setRoute(routes["home"].name);
+    break;
+  }
+  case Button::Back: {
+    darkMode = !darkMode;
+    break;
   }
   }
 }

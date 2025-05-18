@@ -68,14 +68,14 @@ typedef struct watchySettings {
   int8_t muteToHour = 8;
 } watchySettings;
 
-struct Screen {
-  void (Watchy::*render)(bool);
-  void (Watchy::*onPress)();
-};
-
 enum class Button { Nothing, Menu, Back, Up, Down };
 
 class Watchy {
+  struct Screen {
+    void (Watchy::*render)(bool);
+    void (Watchy::*onButtonPress)();
+  };
+
 public:
 #ifdef ARDUINO_ESP32S3_DEV
   static Watchy32KRTC RTC;
@@ -87,19 +87,24 @@ public:
   watchySettings settings;
   Router *router;
   Button pressedButton = Button::Nothing;
-  std::vector<Route> routes = {
-      {
-          "home",
-          {"menu"},
-      },
+  std::map<std::string, Route> routes = {
+      {"home",
+       {
+           .name = "home",
+           .routes = {"menu"},
+       }},
       {"menu",
        {
-           "about",
-           "buzz",
-           "accelerometer",
-           "time",
-           "update-fw",
-           "sync-ntp",
+           .name = "menu",
+           .routes =
+               {
+                   "about",
+                   "buzz",
+                   "accelerometer",
+                   "time",
+                   "update-fw",
+                   "sync-ntp",
+               },
        }},
   };
   std::map<std::string, Screen> routeScreens{
@@ -107,6 +112,7 @@ public:
           "home",
           {
               .render = &Watchy::showWatchFace,
+              .onButtonPress = &Watchy::onWatchFaceButtonPress,
           },
       },
       {
@@ -162,6 +168,7 @@ public:
   void vibMotor(uint8_t intervalMs = 100, uint8_t length = 20);
 
   virtual void handleButtonPress();
+  void onWatchFaceButtonPress();
   void showMenu(byte menuIndex, bool partialRefresh);
   void showFastMenu(byte menuIndex);
   void showAbout(bool partialRefresh);
@@ -181,6 +188,7 @@ public:
   void showWatchFace(bool partialRefresh);
   virtual void drawWatchFace(); // override this method for different watch
                                 // faces
+  bool isDarkMode();
 
 private:
   void _bmaConfig();
