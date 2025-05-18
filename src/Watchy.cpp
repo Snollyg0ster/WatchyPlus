@@ -55,10 +55,12 @@ void Watchy::init(String datetime) {
     _drawScreen(true);
 
     break;
-  case ESP_SLEEP_WAKEUP_EXT1: // button Press
+  case ESP_SLEEP_WAKEUP_EXT1: { // button Press
+    RTC.read(currentTime);
     bool partialRefresh = _handleNavigation();
     _drawScreen(partialRefresh);
     break;
+  }
 #ifdef ARDUINO_ESP32S3_DEV
   case ESP_SLEEP_WAKEUP_EXT0: // USB plug in
     pinMode(USB_DET_PIN, INPUT);
@@ -103,7 +105,7 @@ bool Watchy::_handleNavigation() {
   Route route = router->getRoute();
 
   if (routeScreens.count(route.name)) {
-    return false;
+    return true;
   }
 
   if (wakeupBit & MENU_BTN_MASK) {

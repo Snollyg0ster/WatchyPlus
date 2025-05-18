@@ -1,6 +1,6 @@
 #include <Router.h>
 
-void Router::setRoute(std::string name, bool clear = false) {
+void Router::setRoute(std::string name, bool clear) {
   if (clear)
     history.clear();
   history.push_back(routeMap.at(name));
