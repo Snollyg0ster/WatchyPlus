@@ -68,6 +68,13 @@ typedef struct watchySettings {
   int8_t muteToHour = 8;
 } watchySettings;
 
+struct Screen {
+  void (Watchy::*render)(bool);
+  void (Watchy::*onPress)();
+};
+
+enum class Button { Nothing, Menu, Back, Up, Down };
+
 class Watchy {
 public:
 #ifdef ARDUINO_ESP32S3_DEV
@@ -79,6 +86,7 @@ public:
   tmElements_t currentTime;
   watchySettings settings;
   Router *router;
+  Button pressedButton = Button::Nothing;
   std::vector<Route> routes = {
       {
           "home",
@@ -94,38 +102,54 @@ public:
            "sync-ntp",
        }},
   };
-  std::map<std::string, void (Watchy::*)(bool)> routeScreens{
+  std::map<std::string, Screen> routeScreens{
       {
           "home",
-          &Watchy::showWatchFace,
+          {
+              .render = &Watchy::showWatchFace,
+          },
       },
       {
           "about",
-          &Watchy::showAbout,
+          {
+              .render = &Watchy::showAbout,
+          },
       },
       {
           "buzz",
-          &Watchy::showBuzz,
+          {
+              .render = &Watchy::showBuzz,
+          },
       },
       {
           "accelerometer",
-          &Watchy::showAccelerometer,
+          {
+              .render = &Watchy::showAccelerometer,
+          },
       },
       {
           "wifi",
-          &Watchy::setupWifi,
+          {
+              .render = &Watchy::setupWifi,
+          },
       },
       {
           "time",
-          &Watchy::setTime,
+          {
+              .render = &Watchy::setTime,
+          },
       },
       {
           "update-fw",
-          &Watchy::showUpdateFW,
+          {
+              .render = &Watchy::showUpdateFW,
+          },
       },
       {
           "sync-ntp",
-          &Watchy::showSyncNTP,
+          {
+              .render = &Watchy::showSyncNTP,
+          },
       }};
 
 public:
@@ -170,6 +194,7 @@ private:
                               String apiKey, uint8_t updateInterval);
   void _drawScreen(bool partialUpdate);
   bool _handleNavigation();
+  void _checkPressedButton();
 };
 
 extern RTC_DATA_ATTR int guiState;

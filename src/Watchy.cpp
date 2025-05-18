@@ -57,6 +57,7 @@ void Watchy::init(String datetime) {
     break;
   case ESP_SLEEP_WAKEUP_EXT1: { // button Press
     RTC.read(currentTime);
+    _checkPressedButton();
     bool partialRefresh = _handleNavigation();
     _drawScreen(partialRefresh);
     break;
@@ -95,40 +96,62 @@ void Watchy::_drawScreen(bool partialUpdate = false) {
   auto screenIterator = routeScreens.find(route.name);
 
   if (screenIterator != routeScreens.end()) {
-    void (Watchy::*screen)(bool) = screenIterator->second;
-    (this->*screen)(partialUpdate);
+    Screen screen = screenIterator->second;
+    (this->*screen.render)(partialUpdate);
+  }
+}
+
+void Watchy::_checkPressedButton() {
+  uint64_t wakeupBit = esp_sleep_get_ext1_wakeup_status();
+
+  if (wakeupBit & MENU_BTN_MASK) {
+    pressedButton = Button::Menu;
+    return;
+  }
+
+  if (wakeupBit & BACK_BTN_MASK) {
+    pressedButton = Button::Back;
+    return;
+  }
+
+  if (wakeupBit & UP_BTN_MASK) {
+    pressedButton = Button::Up;
+    return;
+  }
+
+  if (wakeupBit & DOWN_BTN_MASK) {
+    pressedButton = Button::Down;
+    return;
   }
 }
 
 bool Watchy::_handleNavigation() {
-  uint64_t wakeupBit = esp_sleep_get_ext1_wakeup_status();
   Route route = router->getRoute();
 
   if (routeScreens.count(route.name)) {
     return true;
   }
 
-  if (wakeupBit & MENU_BTN_MASK) {
+  switch (pressedButton) {
+  case Button::Menu: {
     router->setRoute(route.routes.at(routeIndexes[route.name]));
     return false;
   }
-
-  if (wakeupBit & BACK_BTN_MASK) {
+  case Button::Back: {
     router->back();
     return false;
   }
-
-  if (wakeupBit & UP_BTN_MASK) {
+  case Button::Up: {
     routeIndexes[route.name] =
         (routeIndexes[route.name] % route.routes.size()) + 1;
     return true;
   }
-
-  if (wakeupBit & DOWN_BTN_MASK) {
+  case Button::Down: {
     routeIndexes[route.name] =
         (route.routes.size() + routeIndexes[route.name] - 1) %
         route.routes.size();
     return true;
+  }
   }
 }
 
