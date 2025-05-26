@@ -82,7 +82,7 @@ void Watchy::init(String datetime) {
 #endif
     gmtOffset = settings.gmtOffset;
     RTC.read(bootTime);
-    showWatchFace(false); // full update on reset
+    _drawScreen(false); // full update on reset
     vibMotor(75, 4);
     // For some reason, seems to be enabled on first boot
     esp_sleep_disable_wakeup_source(ESP_SLEEP_WAKEUP_ALL);
@@ -98,7 +98,10 @@ void Watchy::_drawScreen(bool partialUpdate = false) {
   if (screenIterator != routeScreens.end()) {
     Screen screen = screenIterator->second;
     (this->*screen.render)(partialUpdate);
+    return;
   }
+
+  showMenuScreen(routeIndexes[route.name], partialUpdate);
 }
 
 void Watchy::_checkPressedButton() {
@@ -156,6 +159,39 @@ bool Watchy::_handleNavigation() {
   }
 }
 
+void Watchy::showMenuScreen(byte menuIndex, bool partialRefresh) {
+  display.setFullWindow();
+  display.fillScreen(GxEPD_BLACK);
+  display.setFont(&FreeMonoBold9pt7b);
+
+  int16_t x1, y1;
+  uint16_t w, h;
+  int16_t yPos;
+
+  auto menuItems = router->getRoute().routes;
+
+  for (int i = 0; i < menuItems.size(); i++) {
+    const char *menuItem = menuItems[i].c_str();
+    yPos = MENU_HEIGHT + (MENU_HEIGHT * i);
+    display.setCursor(0, yPos);
+
+    if (i == menuIndex) {
+      display.getTextBounds(menuItem, 0, yPos, &x1, &y1, &w, &h);
+      display.fillRect(x1 - 1, y1 - 10, 200, h + 15, GxEPD_WHITE);
+      display.setTextColor(GxEPD_BLACK);
+      display.println(menuItem);
+    } else {
+      display.setTextColor(GxEPD_WHITE);
+      display.println(menuItem);
+    }
+  }
+
+  display.display(partialRefresh);
+
+  guiState = MAIN_MENU_STATE;
+  alreadyInMenu = false;
+};
+
 bool Watchy::onWatchFaceButtonPress() {
   switch (pressedButton) {
   case Button::Menu: {
@@ -163,10 +199,17 @@ bool Watchy::onWatchFaceButtonPress() {
     return false;
   }
   case Button::Back: {
-    darkMode = !darkMode;
+    if (router->prevRouteName == "") {
+      darkMode = !darkMode;
+    }
     return false;
   }
-  default:
+  case Button::Up: {
+    return true;
+  }
+  case Button::Down: {
+    return true;
+  }
   }
 }
 

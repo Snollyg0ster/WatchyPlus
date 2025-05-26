@@ -1,12 +1,16 @@
 #include <Router.h>
 
 void Router::setRoute(std::string name, bool clear) {
+  if (!history.empty()) {
+    prevRouteName = getRoute().name;
+  }
+
   if (clear)
     history.clear();
   history.push_back(routeMap.at(name));
 }
 
-Router::Router(std::map<std::string, Route> routes, History restoredhistory,
+Router::Router(std::map<std::string, Route> routes, History &restoredhistory,
                std::string defaultRoute) {
   for (auto r : routes) {
     routeMap[r.second.name] = r.second;
@@ -26,6 +30,7 @@ bool Router::back() {
     return false;
   }
 
+  prevRouteName = getRoute().name;
   history.pop_back();
   return true;
 }

@@ -169,6 +169,7 @@ public:
 
   virtual void handleButtonPress();
   bool onWatchFaceButtonPress();
+  void showMenuScreen(byte menuIndex, bool partialRefresh);
   void showMenu(byte menuIndex, bool partialRefresh);
   void showFastMenu(byte menuIndex);
   void showAbout(bool partialRefresh);
