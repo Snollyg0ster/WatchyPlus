@@ -103,10 +103,39 @@ public:
                    "about",
                    "buzz",
                    "accelerometer",
+                   "wifi",
                    "time",
                    "update-fw",
                    "sync-ntp",
                },
+       }},
+      {"about",
+       {
+           .name = "about",
+       }},
+      {"buzz",
+       {
+           .name = "buzz",
+       }},
+      {"accelerometer",
+       {
+           .name = "accelerometer",
+       }},
+      {"wifi",
+       {
+           .name = "wifi",
+       }},
+      {"time",
+       {
+           .name = "time",
+       }},
+      {"update-fw",
+       {
+           .name = "update-fw",
+       }},
+      {"sync-ntp",
+       {
+           .name = "sync-ntp",
        }},
   };
   std::map<std::string, Screen> routeScreens{
@@ -121,42 +150,49 @@ public:
           "about",
           {
               .render = &Watchy::showAbout,
+              .onButtonPress = &Watchy::onScreenButtonPress,
           },
       },
       {
           "buzz",
           {
               .render = &Watchy::showBuzz,
+              .onButtonPress = &Watchy::onScreenButtonPress,
           },
       },
       {
           "accelerometer",
           {
               .render = &Watchy::showAccelerometer,
+              .onButtonPress = &Watchy::onScreenButtonPress,
           },
       },
       {
           "wifi",
           {
               .render = &Watchy::setupWifi,
+              .onButtonPress = &Watchy::onScreenButtonPress,
           },
       },
       {
           "time",
           {
               .render = &Watchy::setTime,
+              .onButtonPress = &Watchy::onScreenButtonPress,
           },
       },
       {
           "update-fw",
           {
               .render = &Watchy::showUpdateFW,
+              .onButtonPress = &Watchy::onScreenButtonPress,
           },
       },
       {
           "sync-ntp",
           {
               .render = &Watchy::showSyncNTP,
+              .onButtonPress = &Watchy::onScreenButtonPress,
           },
       }};
 
@@ -170,7 +206,8 @@ public:
   void vibMotor(uint8_t intervalMs = 100, uint8_t length = 20);
 
   virtual void handleButtonPress();
-  bool onWatchFaceButtonPress();
+  virtual bool onWatchFaceButtonPress();
+  virtual bool onScreenButtonPress();
   void showMenuScreen(byte menuIndex, bool partialRefresh);
   void showMenu(byte menuIndex, bool partialRefresh);
   void showFastMenu(byte menuIndex);

@@ -232,7 +232,8 @@ bool Watchy::_handleNavigation() {
 
   switch (pressedButton) {
   case Button::Menu: {
-    router->setRoute(route.routes.at(routeIndexes[route.name]));
+    int index = routeIndexes[route.name];
+    router->setRoute(route.routes.at(index));
     return false;
   }
   case Button::Back: {
@@ -305,6 +306,15 @@ bool Watchy::onWatchFaceButtonPress() {
   }
   case Button::Down: {
     return true;
+  }
+  }
+}
+
+bool Watchy::onScreenButtonPress() {
+  switch (pressedButton) {
+  case Button::Back: {
+    router->back();
+    return false;
   }
   }
 }
