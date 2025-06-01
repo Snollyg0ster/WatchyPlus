@@ -557,7 +557,7 @@ void Watchy::showBuzz(bool partialRefresh = false) {
   display.println("Buzz!");
   display.display(false); // full refresh
   vibMotor();
-  showMenu(menuIndex, false);
+  router->back();
 }
 
 void Watchy::vibMotor(uint8_t intervalMs, uint8_t length) {
@@ -733,7 +733,7 @@ void Watchy::setTime(bool partialRefresh = false) {
 
   RTC.set(tm);
 
-  showMenu(menuIndex, false);
+  router->back();
 }
 
 void Watchy::showAccelerometer(bool partialRefresh = false) {
@@ -804,7 +804,7 @@ void Watchy::showAccelerometer(bool partialRefresh = false) {
     }
   }
 
-  showMenu(menuIndex, false);
+  router->back();
 }
 
 void Watchy::showWatchFace(bool partialRefresh = false) {
@@ -1227,7 +1227,7 @@ void Watchy::updateFWBegin() {
   // turn off radios
   WiFi.mode(WIFI_OFF);
   btStop();
-  showMenu(menuIndex, false);
+  router->back();
 }
 
 void Watchy::showSyncNTP(bool partialRefresh = false) {
@@ -1271,7 +1271,7 @@ void Watchy::showSyncNTP(bool partialRefresh = false) {
   }
   display.display(true); // full refresh
   delay(3000);
-  showMenu(menuIndex, false);
+  router->back();
 }
 
 bool Watchy::syncNTP() { // NTP sync - call after connecting to WiFi and
