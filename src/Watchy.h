@@ -2,6 +2,7 @@
 #define WATCHY_H
 
 // clang-format off
+#include <cstring>
 #include <Router.h>
 #include <functional>
 #include <Arduino.h>

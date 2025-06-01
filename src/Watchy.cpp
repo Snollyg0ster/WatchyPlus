@@ -25,12 +25,51 @@ RTC_DATA_ATTR tmElements_t bootTime;
 RTC_DATA_ATTR uint32_t lastIPAddress;
 RTC_DATA_ATTR char lastSSID[30];
 RTC_DATA_ATTR std::map<std::string, int> routeIndexes = {};
-RTC_DATA_ATTR std::vector<Route> routingHistory = {};
+RTC_DATA_ATTR char historyBuffer[300];
 
 bool Watchy::isDarkMode() { return darkMode; }
 
 Watchy::Watchy(const watchySettings &s) : settings(s) {
+  std::vector<Route> routingHistory;
+
+  // restoring history from string
+  std::string routeName;
+
+  for (char *letter = historyBuffer; *letter != '\0'; letter++) {
+    if (*letter != ',') {
+      routeName += *letter;
+
+      if (*(letter + 1) != '\0') {
+        continue;
+      }
+    }
+
+    routingHistory.push_back(routes.at(routeName));
+    routeName = "";
+  }
+
   router = new Router(routes, routingHistory, "home");
+
+  // saving history to string
+  router->onChange = [](History history) {
+    int i = 0;
+
+    for (int j = 0; j < history.size(); j++) {
+      Route route = history[j];
+
+      for (char letter : route.name) {
+        historyBuffer[i] = letter;
+        i++;
+      }
+
+      if (j != history.size() - 1) {
+        historyBuffer[i] = ',';
+        i++;
+      }
+    }
+
+    historyBuffer[i] = '\0';
+  };
 }
 
 void Watchy::init(String datetime) {

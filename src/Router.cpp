@@ -5,9 +5,15 @@ void Router::setRoute(std::string name, bool clear) {
     prevRouteName = getRoute().name;
   }
 
-  if (clear)
+  if (clear) {
     history.clear();
+  }
+
   history.push_back(routeMap.at(name));
+
+  if (onChange != nullptr) {
+    onChange(history);
+  }
 }
 
 Router::Router(std::map<std::string, Route> routes, History &restoredhistory,
@@ -32,5 +38,10 @@ bool Router::back() {
 
   prevRouteName = getRoute().name;
   history.pop_back();
+
+  if (onChange != nullptr) {
+    onChange(history);
+  }
+
   return true;
 }

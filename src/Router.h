@@ -24,6 +24,7 @@ public:
   Route getRoute();
   bool back();
   std::string prevRouteName = "";
+  void (*onChange)(History) = nullptr;
 };
 
 #endif // ROUTER_H
