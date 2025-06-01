@@ -88,6 +88,7 @@ public:
   watchySettings settings;
   Router *router;
   Button pressedButton = Button::Nothing;
+  std::map<std::string, int> routeIndexes;
   std::map<std::string, Route> routes = {
       {"home",
        {

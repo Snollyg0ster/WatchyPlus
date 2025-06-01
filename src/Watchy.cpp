@@ -24,15 +24,13 @@ RTC_DATA_ATTR bool USB_PLUGGED_IN = false;
 RTC_DATA_ATTR tmElements_t bootTime;
 RTC_DATA_ATTR uint32_t lastIPAddress;
 RTC_DATA_ATTR char lastSSID[30];
-RTC_DATA_ATTR std::map<std::string, int> routeIndexes = {};
+RTC_DATA_ATTR char indexesBuffer[300];
 RTC_DATA_ATTR char historyBuffer[300];
 
 bool Watchy::isDarkMode() { return darkMode; }
 
-Watchy::Watchy(const watchySettings &s) : settings(s) {
+std::vector<Route> restoreRoutingHistory(std::map<std::string, Route> routes) {
   std::vector<Route> routingHistory;
-
-  // restoring history from string
   std::string routeName;
 
   for (char *letter = historyBuffer; *letter != '\0'; letter++) {
@@ -48,28 +46,85 @@ Watchy::Watchy(const watchySettings &s) : settings(s) {
     routeName = "";
   }
 
-  router = new Router(routes, routingHistory, "home");
+  return routingHistory;
+}
 
-  // saving history to string
-  router->onChange = [](History history) {
-    int i = 0;
+void storeRoutingHistory(History history) {
+  int i = 0;
 
-    for (int j = 0; j < history.size(); j++) {
-      Route route = history[j];
+  for (int j = 0; j < history.size(); j++) {
+    Route route = history[j];
 
-      for (char letter : route.name) {
-        historyBuffer[i] = letter;
-        i++;
-      }
-
-      if (j != history.size() - 1) {
-        historyBuffer[i] = ',';
-        i++;
-      }
+    for (char letter : route.name) {
+      historyBuffer[i] = letter;
+      i++;
     }
 
-    historyBuffer[i] = '\0';
-  };
+    if (j != history.size() - 1) {
+      historyBuffer[i] = ',';
+      i++;
+    }
+  }
+
+  historyBuffer[i] = '\0';
+}
+
+void storeRouteIndexes(std::map<std::string, int> routeIndexes) {
+  int i = 0;
+
+  for (auto item = routeIndexes.begin(); item != routeIndexes.end(); item++) {
+    std::string value =
+        item->first + "=" + std::to_string(item->second).c_str();
+
+    for (int j = 0; j < value.size(); j++) {
+      indexesBuffer[i] = value[j];
+      i++;
+    }
+
+    if (std::next(item) != routeIndexes.end()) {
+      indexesBuffer[i] = ',';
+      i++;
+    }
+  }
+}
+
+void restoreRouteIndexes(std::map<std::string, int> &routeIndexes) {
+  std::string key;
+  std::string value;
+  bool isValue = false;
+
+  for (char *letter = indexesBuffer; *letter != '\0'; letter++) {
+    if (*letter == ',') {
+      routeIndexes[key] = std::stoi(value);
+      key = "";
+      value = "";
+      isValue = false;
+      continue;
+    }
+
+    if (*letter == '=') {
+      isValue = true;
+      continue;
+    }
+
+    if (isValue) {
+      value += *letter;
+    } else {
+      key += *letter;
+    }
+  }
+
+  if (key != "") {
+    routeIndexes[key] = std::stoi(value);
+  }
+}
+
+Watchy::Watchy(const watchySettings &s) : settings(s) {
+  auto routingHistory = restoreRoutingHistory(routes);
+  router = new Router(routes, routingHistory, "home");
+
+  router->onChange = storeRoutingHistory;
+  restoreRouteIndexes(routeIndexes);
 }
 
 void Watchy::init(String datetime) {
@@ -186,13 +241,15 @@ bool Watchy::_handleNavigation() {
   }
   case Button::Up: {
     routeIndexes[route.name] =
-        (routeIndexes[route.name] % route.routes.size()) + 1;
+        (route.routes.size() + routeIndexes[route.name] - 1) %
+        route.routes.size();
+    storeRouteIndexes(routeIndexes);
     return true;
   }
   case Button::Down: {
     routeIndexes[route.name] =
-        (route.routes.size() + routeIndexes[route.name] - 1) %
-        route.routes.size();
+        (routeIndexes[route.name] + 1) % route.routes.size();
+    storeRouteIndexes(routeIndexes);
     return true;
   }
   }
